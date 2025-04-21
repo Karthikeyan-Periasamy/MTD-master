@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: load-balancer
+  labels:
+    app: load-balancer
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: load-balancer
+  template:
+    metadata:
+      labels:
+        app: load-balancer
+    spec:
+      containers:
+      - name: load-balancer-container
+        image: karthi1810/webapp:103  # Update with your image
+        ports:
+        - containerPort: 5000  # Update if your app runs on a different port
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: load-balancer-service
+spec:
+  selector:
+    app: load-balancer
+  ports:
+    - protocol: TCP
+      port: 5000
+      targetPort: 5000 
+      nodePort: 30003  # Change this to a port of your choice
+  type: NodePort  # Change to LoadBalancer if using a cloud provider

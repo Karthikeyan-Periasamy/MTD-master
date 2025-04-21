@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: webapp
+  labels:
+    app: webapp
+spec:
+  replicas: 8
+  selector:
+    matchLabels:
+      app: webapp
+  template:
+    metadata:
+      labels:
+        app: webapp  
+    spec:
+      containers:
+      - name: webapp-container
+        image: karthi1810/webapp:101  # Update with your image
+        ports:
+        - containerPort: 8080  # Update if your app runs on a different port 
+        env:
+        - name: POD_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
+  strategy:
+    type: RollingUpdate  # The default strategy is RollingUpdate
+    rollingUpdate:
+      maxSurge: 1          # Allows 1 extra pod to be created during update
+      maxUnavailable: 1    # Allows 1 pod to be unavailable during update 
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: webapp-service
+spec:
+  selector:
+    app: webapp
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080 
+      nodePort: 30001  # Change this to a port of your choice
+  type: NodePort  # Change to LoadBalancer if using a cloud provider

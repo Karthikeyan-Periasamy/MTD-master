@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: session-manager
+  labels:
+    app: session-manager
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: session-manager
+  template:
+    metadata:
+      labels:
+        app: session-manager
+    spec:
+      containers:
+      - name: session-manager-container
+        image: karthi1810/webapp:102  # Update with your image
+        ports:
+        - containerPort: 8888  # Update if your app runs on a different port
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: session-manager-service
+spec:
+  selector:
+    app: session-manager
+  ports:
+    - protocol: TCP
+      port: 8888
+      targetPort: 8888 
+      nodePort: 30002  # Change this to a port of your choice
+  type: NodePort  # Change to LoadBalancer if using a cloud provider
