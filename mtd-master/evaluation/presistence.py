@@ -11,7 +11,6 @@ def test_persistence(base_url, test_duration=24*3600):
     start_time = time.time()
     end_time = start_time + test_duration
     
-    # Install backdoors periodically
     while time.time() < end_time:
         # Get current pod info
         try:
@@ -42,21 +41,20 @@ def test_persistence(base_url, test_duration=24*3600):
                     if response.status_code == 200:
                         current_pod = response.json()["pod_info"]
                         
-                        # Check if the pod still exists
+                        """ Check if the pod still exists """
                         if current_pod["pod_name"] == backdoor["pod_name"]:
                             backdoor["last_check_time"] = time.time()
                         else:
-                            # Mark as evicted if we can't find the pod
                             backdoor["evicted"] = True
                             backdoor["eviction_time"] = time.time()
                             print(f"{backdoor['id']} evicted after {backdoor['eviction_time'] - backdoor['install_time']:.1f} seconds")
                 except Exception:
-                    # Connection error might indicate pod is gone
+                    
                     pass
         
         time.sleep(60)  # Check every minute
     
-    # Calculate persistence statistics
+    # Calculate persistence 
     persistence_times = []
     for backdoor in backdoors:
         if backdoor["evicted"]:
@@ -74,8 +72,6 @@ def test_persistence(base_url, test_duration=24*3600):
         "maximum_persistence_seconds": max_persistence,
         "eviction_rate": eviction_rate
     }
-
-# Run the test
 persistence_results = test_persistence("http://127.0.0.1:51417")
 print(f"Average backdoor persistence: {persistence_results['average_persistence_seconds']/60:.1f} minutes")
 print(f"Eviction rate: {persistence_results['eviction_rate']*100:.1f}%")
