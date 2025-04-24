@@ -21,7 +21,6 @@ def test_download_continuity(base_url, num_downloads=20):
                     if last_pod_id is not None and current_pod != last_pod_id:
                         print(f"Rotation detected: {last_pod_id} -> {current_pod}")
                         rotation_detected.set()
-                        # Reset after 30 seconds
                         threading.Timer(30, rotation_detected.clear).start()
                     last_pod_id = current_pod
             except:
@@ -31,7 +30,6 @@ def test_download_continuity(base_url, num_downloads=20):
     def perform_downloads():
         """Thread to perform downloads"""
         for i in range(num_downloads):
-            # Check file sizes
             file_size = "large.txt"  # Use large file to increase chances of spanning rotation
             
             result = {
@@ -39,26 +37,24 @@ def test_download_continuity(base_url, num_downloads=20):
                 "start_time": time.time(),
                 "completed": False,
                 "bytes_received": 0,
-                "expected_size": 10485760,  # 10MB for large.txt
+                "expected_size": 10485760,  
                 "rotation_occurred": False,
                 "download_time": None,
                 "error": None
             }
             
             try:
-                # Start the download
                 response = requests.get(
                     f"{base_url}/download/{file_size}", 
                     stream=True, 
-                    timeout=300  # 5-minute timeout
+                    timeout=300  
                 )
                 
                 if response.status_code == 200:
-                    # Get content length if available
+
                     if 'Content-Length' in response.headers:
                         result["expected_size"] = int(response.headers['Content-Length'])
                     
-                    # Stream the download to track progress
                     with open(os.devnull, 'wb') as f:
                         for chunk in response.iter_content(chunk_size=8192):
                             if chunk:
@@ -76,22 +72,18 @@ def test_download_continuity(base_url, num_downloads=20):
             except Exception as e:
                 result["error"] = str(e)
             
-            # Record the result
             download_results.append(result)
             print(f"Download {i+1}/{num_downloads}: {'✓' if result['completed'] else '✗'} " +
                   f"{'(during rotation)' if result['rotation_occurred'] else ''}")
-            
-            # Wait briefly between downloads
             time.sleep(5)
     
-    # Start threads
     rotation_thread = threading.Thread(target=monitor_rotations)
     download_thread = threading.Thread(target=perform_downloads)
     
     rotation_thread.start()
     download_thread.start()
     
-    # Wait for downloads to complete
+
     download_thread.join()
     
     # Calculate metrics
