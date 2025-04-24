@@ -99,10 +99,8 @@ def login(name):
 
 @app.route("/files", methods=["GET"])
 def list_files():
-    # List available files for download
     files = []
     
-    # List predefined sample files
     for filename in SAMPLE_FILES.keys():
         filepath = os.path.join(DOWNLOAD_FOLDER, filename)
         if os.path.exists(filepath):
@@ -113,7 +111,6 @@ def list_files():
                 "type": "sample"
             })
     
-    # List uploaded files (if user is logged in)
     session_id = request.cookies.get("session_id")
     if session_id:
         user_data = redis_client.get(f"session:{session_id}")
@@ -138,10 +135,8 @@ def list_files():
 
 @app.route("/download/<filename>", methods=["GET"])
 def download_file(filename):
-    # First check if it's a sample file
     filepath = os.path.join(DOWNLOAD_FOLDER, filename)
     
-    # If not a sample file, check if it's a user-uploaded file
     if not os.path.exists(filepath):
         session_id = request.cookies.get("session_id")
         if session_id:
@@ -189,11 +184,10 @@ def upload_file():
             "pod_info": get_pod_info()
         }), 400
     
-    # Create user upload directory if it doesn't exist
     user_upload_dir = os.path.join(UPLOAD_FOLDER, user)
     os.makedirs(user_upload_dir, exist_ok=True)
     
-    # Save the file
+
     filename = secure_filename(file.filename)
     filepath = os.path.join(user_upload_dir, filename)
     file.save(filepath)
