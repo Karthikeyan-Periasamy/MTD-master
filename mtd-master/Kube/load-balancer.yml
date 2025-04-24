@@ -14,6 +14,7 @@ spec:
       labels:
         app: load-balancer
     spec:
+      serviceAccountName: mtd-controller-account
       containers:
       - name: load-balancer-container
         image: karthi1810/webapp:103  # Update with your image
